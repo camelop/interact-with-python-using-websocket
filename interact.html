@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+
+<head>
+
+   <meta charset="utf-8" />
+
+   <title>WebSocket Test</title>
+
+   <link href="https://cdn.bootcss.com/semantic-ui/2.4.1/semantic.min.css" rel="stylesheet">
+   <script src="https://cdn.bootcss.com/semantic-ui/2.4.1/semantic.min.js"></script>
+
+</head>
+
+<body style="font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif">
+
+   <script language="javascript" type="text/javascript">
+      function init() {
+         document.myform.url.value = "ws://localhost:8000/"
+         document.myform.inputtext.value = "Hello World!"
+         document.myform.disconnectButton.disabled = true;
+      }
+      function doConnect() {
+         websocket = new WebSocket(document.myform.url.value);
+         websocket.onopen = function (evt) { onOpen(evt) };
+         websocket.onclose = function (evt) { onClose(evt) };
+         websocket.onmessage = function (evt) { onMessage(evt) };
+         websocket.onerror = function (evt) { onError(evt) };
+      }
+      function onOpen(evt) {
+         writeToScreen((new Date).toLocaleTimeString()+" [Connected]\n\n");
+         document.myform.connectButton.disabled = true;
+         document.myform.disconnectButton.disabled = false;
+         document.myform.sendButton.disabled = false;
+      }
+      function onClose(evt) {
+         writeToScreen((new Date).toLocaleTimeString()+" [Disconnected]\n\n");
+         document.myform.connectButton.disabled = false;
+         document.myform.disconnectButton.disabled = true;
+         document.myform.sendButton.disabled = true;
+      }
+      function onMessage(evt) {
+         writeToScreen((new Date).toLocaleTimeString()+" [response]: \n" + evt.data + '\n\n');
+      }
+      function onError(evt) {
+         writeToScreen((new Date).toLocaleTimeString()+' [error]: \n' + evt.data + '\n\n');
+         websocket.close();
+         document.myform.connectButton.disabled = false;
+         document.myform.disconnectButton.disabled = true;
+      }
+      function doSend(message) {
+         writeToScreen((new Date).toLocaleTimeString()+" [sent]: \n" + message + '\n\n');
+         websocket.send(message);
+      }
+      function writeToScreen(message) {
+         document.myform.outputtext.value += message
+         document.myform.outputtext.scrollTop = document.myform.outputtext.scrollHeight;
+      }
+      window.addEventListener("load", init, false);
+      function sendText() {
+         doSend(document.myform.inputtext.value);
+      }
+      function clearText() {
+         document.myform.outputtext.value = "";
+      }
+      function doDisconnect() {
+         websocket.close();
+      }
+   </script>
+
+   <div id="output"></div>
+
+
+   <div class="ui grid">
+      <div class="two wide column"></div>
+      <div class="twelve wide column">
+         <br>
+         <br>
+         <h2 class="ui dividing header">Connect to Python</h2>
+         <form name="myform" class="ui form">
+            <p>
+               <label>Message Box</label>
+               <textarea name="outputtext" rows="20" cols="50" disabled></textarea>
+               <input type="button" class="fluid ui button" name=clearButton value="Clear" onClick="clearText();">
+            </p>
+            <p>
+               <label>Target url</label>
+               <div class="ui grid">
+                  <div class="ten wide column">
+                     <textarea name="url" cols="50" rows="1"></textarea>
+                  </div>
+                  <div class="six wide column">
+                     <input type="button" class="ui positive button" name=connectButton value="Connect" onClick="doConnect();">
+                     <input type="button" class="ui negative button" name=disconnectButton value="Disconnect" onClick="doDisconnect();">
+                  </div>
+               </div>
+            </p>
+            <p>
+               <label>Your message</label>
+               <textarea name="inputtext" cols="50"></textarea>
+               <input type="button" class="fluid ui primary button" name=sendButton value="Send" onClick="sendText();" disabled>
+            </p>
+
+
+         </form>
+      </div>
+      <div class="two wide column"></div>
+   </div>
+</body>
+
+</html>
